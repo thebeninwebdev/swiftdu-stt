@@ -6,8 +6,11 @@ FastAPI speech-to-text service for SwiftDU, powered by `faster-whisper`.
 
 ```text
 GET /
+GET /health
 POST /transcribe
 ```
+
+`GET /health` is unauthenticated and can be used by uptime monitors such as UptimeRobot.
 
 `POST /transcribe` accepts `multipart/form-data` with an audio `file` field and returns:
 

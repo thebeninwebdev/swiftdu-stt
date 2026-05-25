@@ -3,9 +3,17 @@ import tempfile
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import Depends, FastAPI, File, Header, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Response, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
 from faster_whisper import WhisperModel
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    load_dotenv = None
+
+if load_dotenv:
+    load_dotenv()
 
 SERVICE_NAME = "swiftdu-stt"
 MAX_FILE_SIZE = 10 * 1024 * 1024
@@ -112,6 +120,25 @@ async def save_upload_to_temp_file(file: UploadFile, suffix: str) -> str:
 @app.get("/")
 def health_check() -> dict[str, str]:
     return {"status": "ok", "service": SERVICE_NAME}
+
+
+@app.head("/")
+def health_check_head() -> Response:
+    return Response(status_code=status.HTTP_200_OK)
+
+
+@app.get("/health")
+def health() -> dict[str, str]:
+    return {
+        "status": "ok",
+        "service": SERVICE_NAME,
+        "model": "ready" if model is not None else "loading",
+    }
+
+
+@app.head("/health")
+def health_head() -> Response:
+    return Response(status_code=status.HTTP_200_OK)
 
 
 @app.post("/transcribe", dependencies=[Depends(require_api_key)])
